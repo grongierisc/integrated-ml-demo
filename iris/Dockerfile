@@ -21,6 +21,12 @@ WORKDIR /opt/irisapp
 RUN chown ${ISC_PACKAGE_MGRUSER}:${ISC_PACKAGE_IRISGROUP} /opt/irisapp
 USER ${ISC_PACKAGE_MGRUSER}
 
+## Python stuff
+ENV IRISUSERNAME "SuperUser"
+ENV IRISPASSWORD "SYS"
+
+ENV PATH "/usr/irissys/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/home/irisowner/bin"
+
 # load demo stuff
 RUN iris start IRIS \
 	&& iris session IRIS < /tmp/iris/iris.script && iris stop IRIS quietly

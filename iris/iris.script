@@ -25,6 +25,11 @@
     set tSC = ##class(Security.Applications).Create("/api/integratedML", .props)
     zw tSC
 
+    do ##class(Security.Services).Get("%Service_CallIn",.prop)
+    set prop("Enabled")=1
+    set prop("AutheEnabled")=48
+    do ##class(Security.Services).Modify("%Service_CallIn",.prop)
+
     zn "IRISAPP"
     zw $SYSTEM.OBJ.Load("/tmp/iris/src/IntegratedML/REST/disp.cls", "ck")
 
