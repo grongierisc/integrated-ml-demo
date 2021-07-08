@@ -1,9 +1,12 @@
 ARG IMAGE=containers.intersystems.com/intersystems/iris-ml-community:2021.1.0.215.0
 ARG IMAGE=containers.intersystems.com/intersystems/iris-ml-community:2020.3.0.304.0
+ARG IMAGE=arti.iscinternal.com/intersystems/iris:2021.1.0PYTHON.300.0
 
 FROM $IMAGE
 # copy files
 COPY . /tmp/iris
+
+COPY key/iris.key /usr/irissys/mgr/iris.key
 
 USER root
 
