@@ -47,4 +47,31 @@ ClassMethod Load(pFile As %String, pClass As %String) As %Status
     quit tSC
 }
 
+/// Change namespace
+ClassMethod SetNameSpace(namespace) As %Status
+{
+    Set sc = $$$OK
+    set $namespace = namespace
+    Return sc
+}
+
+ClassMethod GetNameSpace() As %Status
+{
+    Return $namespace
+}
+
+ClassMethod PythonMethod() [ Language = python ]
+{
+import iris
+r = iris.ref(1)
+iris.cls("Util.Loader").COSMethod(r)
+return r.value("toto")
+}
+
+ClassMethod COSMethod()
+{
+    s returnText("test") = "foo"
+	return returnText.GetAt("test")
+}
+
 }

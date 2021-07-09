@@ -13,6 +13,6 @@
         "internalPort": 52773
       },
       "active": true
-    }
-
+    },
+    "python.languageServer": "Default"
 }
