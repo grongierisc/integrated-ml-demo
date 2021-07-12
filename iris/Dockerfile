@@ -3,8 +3,6 @@ ARG IMAGE=containers.intersystems.com/intersystems/iris-ml-community:2020.3.0.30
 ARG IMAGE=arti.iscinternal.com/intersystems/iris:2021.1.0PYTHON.300.0
 
 FROM $IMAGE
-# copy files
-COPY . /tmp/iris
 
 COPY key/iris.key /usr/irissys/mgr/iris.key
 
@@ -20,6 +18,7 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /opt/irisapp
 RUN chown ${ISC_PACKAGE_MGRUSER}:${ISC_PACKAGE_IRISGROUP} /opt/irisapp
 USER ${ISC_PACKAGE_MGRUSER}
+COPY . /opt/irisapp
 
 ## Python stuff
 ENV IRISUSERNAME "SuperUser"
@@ -27,6 +26,8 @@ ENV IRISPASSWORD "SYS"
 
 ENV PATH "/usr/irissys/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/home/irisowner/bin"
 
-# load demo stuff
+RUN /usr/irissys/bin/irispip install -r /opt/irisapp/python/requirements.txt
+
+# IRIS stuff
 RUN iris start IRIS \
-	&& iris session IRIS < /tmp/iris/iris.script && iris stop IRIS quietly
+	&& iris session IRIS < /opt/irisapp/iris.script && iris stop IRIS quietly

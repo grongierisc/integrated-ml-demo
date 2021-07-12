@@ -10,8 +10,6 @@ app = Flask(__name__)
 
 @app.route('/passengers',methods=['GET'])
 def getAllPassengers():
-    
-  changeNameSpace()
   
   # Get query param
   if request.args.get('currPage'):
