@@ -1,6 +1,8 @@
+from os import abort
 from flask import Flask
 from flask import request
 from flask import jsonify
+from flask.wrappers import Response
 import iris
 import json
 
@@ -8,10 +10,8 @@ app = Flask(__name__)
 
 @app.route('/passengers',methods=['GET'])
 def getAllPassengers():
-  try:
-      iris.cls("Util.Loader").SetNameSpace("IRISAPP")
-  except:
-      pass
+    
+  changeNameSpace()
   
   # Get query param
   if request.args.get('currPage'):
@@ -35,8 +35,6 @@ def getAllPassengers():
     for i in rs:
         passenger = iris.ref(1)
         iris.cls("Titanic.Table.Passenger")._OpenId(i[0])._JSONExportToString(passenger)
-        test = iris.cls("Titanic.Table.Passenger")._OpenId(i[0])
-        tezt = 'tte'
         passengers.append(json.loads(passenger.value))
         tRow = tRow + 1
   else:
@@ -61,19 +59,42 @@ def getAllPassengers():
 def createPassenger():
   dyna = {}
   try:
-    iris.cls("Util.Loader").SetNameSpace("IRISAPP")
-  except:
-    pass
-  try:
       passenger = iris.cls("Titanic.Table.Passenger")._New()
       passenger._JSONImport(request.get_data())
-      passenger._Save()
-      passenger.passengerId = passenger._Id()
       passenger._Save()
       dyna['passengerId'] = passenger._Id()
   except :
       pass
   return dyna
-  
+
+@app.route('/passengers/<id>',methods=['GET'])
+def getPassenger(id):
+  dyna = {}
+  if iris.cls("Titanic.Table.Passenger")._ExistsId(id):
+    passenger = iris.ref(1)
+    iris.cls("Titanic.Table.Passenger")._OpenId(id)._JSONExportToString(passenger)
+    dyna = json.loads(passenger.value)
+  else:
+    return '',204
+  return dyna
+
+@app.route('/passengers/<id>',methods=['PUT'])
+def updatePassenger(id):
+  if iris.cls("Titanic.Table.Passenger")._ExistsId(id):
+    passenger=iris.cls("Titanic.Table.Passenger")._OpenId(id)
+    passenger._JSONImport(request.get_data())
+    passenger._Save()
+  else:
+    return '',204
+  return ''
+
+@app.route('/passengers/<id>',methods=['DELETE'])
+def deletePassenger(id):
+  if iris.cls("Titanic.Table.Passenger")._ExistsId(id):
+    iris.cls("Titanic.Table.Passenger")._DeleteId(id)
+  else:
+    return '',204
+  return ''
+ 
 if __name__ == '__main__':
   app.run(host='localhost', port=8080, debug=True)
