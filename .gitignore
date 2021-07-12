@@ -19,3 +19,6 @@ testem.log
 # System Files
 .DS_Store
 Thumbs.db
+
+# pycache
+iris/python/__pycache__/**
