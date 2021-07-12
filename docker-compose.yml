@@ -5,6 +5,7 @@ services:
       context: ./iris
     volumes:
       - ./iris:/tmp/iris
+    command: -a 'sh /opt/irisapp/start.sh'
     ports:
     - 52775:52773
     - 8081:8080
