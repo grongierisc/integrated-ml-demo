@@ -2,14 +2,18 @@ from flask import Flask, jsonify, request, make_response
 from flask_cors import CORS
 import humps 
 import threading
+from definitions.passenger import Passenger
+from definitions.patient import Patient
 
 import iris
 
-# /usr/irissys/bin/irispython /tmp/iris/src/flask/server.py
+# /usr/irissys/bin/irispython /opt/irisapp/src/flask/app.py
 
 app = Flask(__name__)
 CORS(app)
 
+
+# GET all passengers
 @app.route("/api/integratedML/passengers", methods=["GET"])
 def getAllPassengers():
     query = "SELECT * FROM Titanic_Table.Passenger"
@@ -27,11 +31,13 @@ def getAllPassengers():
             pageSize = int(pageSize)
             query += " WHERE ID > ? AND ID <= ?"
             rs = iris.sql.exec(query, pageSize * (currPage - 1), pageSize * currPage)
-        # All passengers
+        # If no queries, return all passengers
         else:
             rs = iris.sql.exec(query)
     payload = {}
-    payload['passengers'] = humps.camelize(rs.dataframe().replace({float("Nan"): ""}).to_dict(orient="records"))
+    payload['passengers'] = []
+    for p in rs:
+        payload['passengers'].append(Passenger(p).__dict__)
     rs = iris.sql.exec("SELECT COUNT(ID) FROM Titanic_Table.Passenger")
     payload['total'] = rs.__next__()[0]
     payload['query'] = query
@@ -40,9 +46,9 @@ def getAllPassengers():
 @app.route("/api/integratedML/passengers", methods=["POST"])
 def createPassenger():
     passenger = request.get_json()
-    query = "INSERT INTO Titanic_Table.Passenger (survived, class, name, sex, age, sib_sp, par_ch, ticket, fare, cabin, embarked, passenger_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+    query = "INSERT INTO Titanic_Table.Passenger (survived, pclass, name, sex, age, sibSp, parCh, ticket, fare, cabin, embarked) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
     newId = int(iris.sql.exec("SELECT MAX(ID) FROM Titanic_Table.Passenger").__next__()[0]) + 1
-    iris.sql.exec(query, passenger['survived'], passenger['class'], passenger['name'], passenger['sex'], passenger['age'], passenger['sibSp'], passenger['parCh'], passenger['ticket'], passenger['fare'], passenger['cabin'], passenger['embarked'], newId)
+    iris.sql.exec(query, passenger['survived'], passenger['pclass'], passenger['name'], passenger['sex'], passenger['age'], passenger['sibSp'], passenger['parCh'], passenger['ticket'], passenger['fare'], passenger['cabin'], passenger['embarked'])
     payload = {
         'query': query,
         'passengerId': newId
@@ -52,24 +58,24 @@ def createPassenger():
 @app.route("/api/integratedML/passengers/<int:id>", methods=["GET"])
 def getPassenger(id):
     payload = {}
-    query = "SELECT * FROM Titanic_Table.Passenger WHERE ID = " + str(id)
-    rs = iris.sql.exec(query)
-    passenger = rs.dataframe().replace({float("Nan"): ""})
-    if (passenger.empty):
+    query = "SELECT * FROM Titanic_Table.Passenger WHERE ID = ?"
+    rs = iris.sql.exec(query, str(id))
+    try :
+        passenger = Passenger(rs.__next__()).__dict__
+    except:        
         return make_response(
             'Not Found',
             204
         )
-    else:
-        payload['passenger'] = humps.camelize(passenger.to_dict(orient="records")[0])
+    payload['passenger'] = passenger
     payload['query'] = query
     return jsonify(payload)
 
 @app.route("/api/integratedML/passengers/<int:id>", methods=["PUT"])
 def updatePassenger(id):
     passenger = request.get_json()
-    query = "UPDATE Titanic_Table.Passenger SET survived = ?, class = ?, name = ?, sex = ?, age = ?, sib_sp = ?, par_ch = ?, ticket = ?, fare = ?, cabin = ?, embarked = ? WHERE ID = ?"
-    iris.sql.exec(query, passenger['survived'], passenger['class'], passenger['name'], passenger['sex'], passenger['age'], passenger['sibSp'], passenger['parCh'], passenger['ticket'], passenger['fare'], passenger['cabin'], passenger['embarked'], id)
+    query = "UPDATE Titanic_Table.Passenger SET survived = ?, pclass = ?, name = ?, sex = ?, age = ?, sibSp = ?, parCh = ?, ticket = ?, fare = ?, cabin = ?, embarked = ? WHERE ID = ?"
+    iris.sql.exec(query, passenger['survived'], passenger['pclass'], passenger['name'], passenger['sex'], passenger['age'], passenger['sibSp'], passenger['parCh'], passenger['ticket'], passenger['fare'], passenger['cabin'], passenger['embarked'], id)
     payload = {
         'query': query,
     }
@@ -78,23 +84,23 @@ def updatePassenger(id):
 @app.route("/api/integratedML/passengers/<int:id>", methods=["DELETE"])
 def deletePassenger(id):
     payload = {}
-    query = "SELECT ID FROM Titanic_Table.Passenger WHERE ID = " + str(id)
-    rs = iris.sql.exec(query)
-    passenger = rs.dataframe().replace({float("Nan"): ""})
-    if (passenger.empty):
+    query = "SELECT ID FROM Titanic_Table.Passenger WHERE ID = ?"
+    rs = iris.sql.exec(query, str(id))
+    try:
+        rs.__next__()
+    except:
         return make_response(
             'Not Found',
             204
         )
-    else:
-        query = "DELETE FROM Titanic_Table.Passenger WHERE ID = " + str(id)
-        iris.sql.exec(query)
+    query = "DELETE FROM Titanic_Table.Passenger WHERE ID = ?"
+    iris.sql.exec(query, str(id))
     payload['query'] = query
     return jsonify(payload)
 
 @app.route("/api/integratedML/patients", methods=["GET"])
 def getAllPatients():
-    query = "SELECT * FROM Noshow_Table.Appointment"
+    query = "SELECT ID, * FROM Noshow_Table.Appointment"
     name = request.args.get('name')
     currPage = request.args.get('currPage')
     pageSize = request.args.get('pageSize')
@@ -113,7 +119,9 @@ def getAllPatients():
         else:
             rs = iris.sql.exec(query)
     payload = {}
-    payload['patients'] = humps.camelize(rs.dataframe().replace({float("Nan"): ""}).to_dict(orient="records"))
+    payload['patients'] = []
+    for p in rs:
+        payload['patients'].append(Patient(p).__dict__)
     rs = iris.sql.exec("SELECT MAX(ID) FROM Noshow_Table.Appointment")
     payload['maxId'] = rs.__next__()[0]
     payload['query'] = query
@@ -135,16 +143,16 @@ def createPatient():
 @app.route("/api/integratedML/patients/<int:id>", methods=["GET"])
 def getPatient(id):
     payload = {}
-    query = "SELECT * FROM Noshow_Table.Appointment WHERE ID = " + str(id)
-    rs = iris.sql.exec(query)
-    patient = humps.camelize(rs.dataframe().replace({float("Nan"): ""}))
-    if (patient.empty):
+    query = "SELECT ID, * FROM Noshow_Table.Appointment WHERE ID = ?"
+    rs = iris.sql.exec(query, str(id))
+    try:
+        patient = Patient(rs.__next__()).__dict__
+    except:
         return make_response(
             'Not Found',
             204
         )
-    else:
-        payload['patient'] = patient.to_dict(orient="records")[0]
+    payload['patient'] = patient
     payload['query'] = query
     return jsonify(payload)
 
@@ -161,17 +169,17 @@ def updatePatient(id):
 @app.route("/api/integratedML/patients/<int:id>", methods=["DELETE"])
 def deletePatient(id):
     payload = {}
-    query = "SELECT ID FROM Noshow_Table.Appointment WHERE ID = " + str(id)
-    rs = iris.sql.exec(query)
-    patient = humps.camelize(rs.dataframe().replace({float("Nan"): ""}))
-    if (patient.empty):
+    query = "SELECT ID FROM Noshow_Table.Appointment WHERE ID = ?"
+    rs = iris.sql.exec(query, str(id))
+    try:
+       rs.__next__()
+    except:
         return make_response(
             'Not Found',
             204
         )
-    else:
-        query = "DELETE FROM Noshow_Table.Appointment WHERE ID = " + str(id)
-        iris.sql.exec(query)
+    query = "DELETE FROM Noshow_Table.Appointment WHERE ID = ?"
+    iris.sql.exec(query, str(id))
     payload['query'] = query
     return jsonify(payload)
 
@@ -209,7 +217,7 @@ def createModel():
             query += ", " + var
         query += ")"
     query += " FROM " + createInfo['fromTable']
-    rs = iris.sql.exec(query)
+    iris.sql.exec(query)
     payload = {}
     payload['query'] = query
     return jsonify(payload)
@@ -243,9 +251,9 @@ def getTrainingRuns():
 def trainModel():
     trainingInfo = request.get_json()
     query = "TRAIN MODEL " + trainingInfo['modelName'] + " AS " + trainingInfo['trainingName'] + " FROM " + trainingInfo['fromTable']
-    iris.sql.exec(query)
-    # trainProcess = threading.Thread(target=iris.cls("IntegratedML.REST.impl").executeQuery, args=(query,))
-    # trainProcess.start()
+    # iris.sql.exec(query)
+    trainProcess = threading.Thread(target=iris.cls("IntegratedML.REST.impl").executeQuery, args=(query,))
+    trainProcess.start()
     # iris.cls("IntegratedML.REST.impl").executeQuery(query)
     payload = {}
     payload['query'] = query
@@ -273,7 +281,7 @@ def getAllConfigurations():
 @app.route("/api/integratedML/ml/trainings/configurations", methods=["PUT"])
 def changeConfiguration():
     configName = request.get_json()
-    iris.cls("%SYS.ML.Configuration")._SetSystemDefault(configName['configName'])
+    iris.cls("%SYS.ML.Configuration")._SetSystemDefault("\"" + configName['configName'] + "\"")
     return make_response(
         'Expected Result',
         200
