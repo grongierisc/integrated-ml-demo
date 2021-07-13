@@ -70,8 +70,10 @@ return r.value("toto")
 
 ClassMethod COSMethod()
 {
-    s returnText("test") = "foo"
-	return returnText.GetAt("test")
+
+    s return("foo") = "bar"
+    s return("bar") = "foo"
+	return return
 }
 
 }
