@@ -1,10 +1,24 @@
 # 1. Integrated ML Demonstration
 
-This repository is a demonstration of integratedML. 
+This repository is a demonstration of integratedML, but also of Embedded Python!
 
-Using a web application, you will be able to create, train and validate the models you want on two datasets, the **Titanic** and the **NoShow** datasets. 
-
-The front-end has been done with angular and the back-end with IRIS. 
+Using a web application, you will be able to create, train and validate the models you want on two datasets, the **Titanic** and the **NoShow** datasets. You will be able to use a REST service made in COS, or a Flask API using Embedded Python to manipulate IRIS objects.
+<br/>
+<br/>
+<br/>
+<p align="center">
+"I couldn't believe my ears in the beggining, but it's real! <br/> ★★★★★ - Philip, Embedded Python enthusiast
+</p>
+<p align="center">
+"Good demo, would try again" <br/> ★★★★☆ - Henry, COS lover 
+</p>
+<p align="center">
+"It's clearly lacking some R code in there" <br/> ★☆☆☆☆ - Jane, R purist
+</p>
+<br/>
+<br/>
+<br/>
+The front-end has been done with angular and the back-end with IRIS (and Python!). 
 
 - [1. Integrated ML Demonstration](#1-integrated-ml-demonstration)
 - [2. Building the demo](#2-building-the-demo)
@@ -12,13 +26,15 @@ The front-end has been done with angular and the back-end with IRIS.
   - [2.2. Building the nginx container](#22-building-the-nginx-container)
 - [3. Running the demo](#3-running-the-demo)
   - [3.1. Exploring both datasets](#31-exploring-both-datasets)
-  - [3.2. Managing models](#32-managing-models)
-    - [3.2.1. Creating a model](#321-creating-a-model)
-    - [3.2.2. Training a model](#322-training-a-model)
-    - [3.2.3. Validating a model](#323-validating-a-model)
-    - [3.2.4. Making predictions](#324-making-predictions)
-- [4. Going further](#4-going-further)
-- [5. Conclusion](#5-conclusion)
+  - [3.2. Using both APIs](#32-using-both-apis)
+  - [3.3. Managing models](#33-managing-models)
+    - [3.3.1. Creating a model](#331-creating-a-model)
+    - [3.3.2. Training a model](#332-training-a-model)
+    - [3.3.3. Validating a model](#333-validating-a-model)
+    - [3.3.4. Making predictions](#334-making-predictions)
+- [4. New Feature ! Embedded Python for the win](#4-new-feature--embedded-python-for-the-win)
+- [5. Going further](#5-going-further)
+- [6. Conclusion](#6-conclusion)
 
 # 2. Building the demo
 
@@ -31,7 +47,9 @@ docker compose up
 
 Two containers will be built: one with IRIS and one with an nginx server. 
 
-![containers](https://raw.githubusercontent.com/thewophile-beep/integrated-ml-demo/main/misc/img/containers.png)
+![containers](https://raw.githubusercontent.com/thewophile-beep/integrated-ml-demo/flask/misc/img/containers.png)
+
+The IRIS image used contains Embedded Python (a key is needed sadly :(... For now)! That's really exciting. After building, the container will run a wsgi server with the Flask API.
 
 We are using the community package csvgen to import the titanic dataset into iris. For the noshow dataset, we use another custom method (the `Load()` classmethod of the `Util.Loader` class). In order for the container to have access to the csv files, we bind the `iris/` local directory to the `/opt/irisapp/` directory in the container.
 
@@ -53,9 +71,15 @@ For both datasets, you'll have access to a complete CRUD, enabling you to modify
 
 In order to switch from one dataset to the other, you can press the button in the top right-hand corner. 
 
-## 3.2. Managing models
+## 3.2. Using both APIs
 
-### 3.2.1. Creating a model
+A little button on the top right-hand cornerwill enable you to switch between COS and Flask API. 
+
+WARNING! Since it's still in dev, you might want to switch to one or another in case of little bugs or whatnot.
+
+## 3.3. Managing models
+
+### 3.3.1. Creating a model
 
 Once you have discovered the data, you can create model predicting the value you want. 
 
@@ -75,7 +99,7 @@ As you can see, creating a model only takes one SQL query. The informations you 
 
 In the `actions` column, you can delete a model or purge it. Purging a model will remove all of its training runs (and their validation runs) except for the last one. 
 
-### 3.2.2. Training a model
+### 3.3.2. Training a model
 
 In the next tab, you will be able to train your models. 
 
@@ -95,7 +119,7 @@ Training a model only takes a single SQL query, as you can see in the messages s
 Keep in mind that in these two tabs, you will only see the models that concern the dataset you are actually using.
 
 
-### 3.2.3. Validating a model
+### 3.3.3. Validating a model
 
 Finally, you can validate a model in the final tab. Clicking on a validation run will pop up a dialog with the metrics associated with the validation. There again, you can choose a percentage of the dataset to use for the validation. 
 
@@ -104,7 +128,7 @@ Finally, you can validate a model in the final tab. Clicking on a validation run
 Once again, it only takes a single SQL query.
 
 
-### 3.2.4. Making predictions
+### 3.3.4. Making predictions
 
 In the `Make Predictions` menu, last tab, you can make predictions using your newly trained models.
 
@@ -118,7 +142,15 @@ In the case of Mrs. Fatima Masselmani, the model correctly predicted that she su
 
 Once again, it takes on query to retreive the prediction and one for the probability.
 
-# 4. Going further
+# 4. New Feature ! Embedded Python for the win
+
+Maybe you noticed the new button in the top righ-hand corner, right next to the switch dataset button... Now you can use the Flask API !
+
+Let's summarize. We created the ObjectScript objects with tools such as csvgen or the Loader, and we used them with Embedded Python. **It is possible to create an entire web application using IRIS, without touching ObjectScript!**
+
+(PS: I admit that we cheated, we still had to modify a bit the ObjectScript objects in order to cast some of the csv fields or to make the tables extend the %JSON.Adaptor)
+
+# 5. Going further
 
 If you want more explainability (more than what the log can offer you), we suggest you using the DataRobot provider. 
 
@@ -134,7 +166,7 @@ Once the models trained, you can have access to **a lot** of details, here's a p
 
 ![DRmodelDetails](https://raw.githubusercontent.com/thewophile-beep/integrated-ml-demo/main/misc/img/DRmodelDetails.png)
 
-# 5. Conclusion
+# 6. Conclusion
 
 Through this demonstration, we have been able to see how easy it was to create, train and validate a model as well as to predict values through very few SQL queries.
 

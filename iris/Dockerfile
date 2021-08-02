@@ -31,3 +31,7 @@ RUN /usr/irissys/bin/irispip install -r /opt/irisapp/python/requirements.txt
 # IRIS stuff
 RUN iris start IRIS \
 	&& iris session IRIS < /opt/irisapp/iris.script && iris stop IRIS quietly
+
+ENV PYTHON_PATH=/usr/irissys/bin/irispython
+ENV FLASK_PATH=/opt/irisapp/python/flask
+RUN ${PYTHON_PATH} -m pip install -r ${FLASK_PATH}/requirements.txt

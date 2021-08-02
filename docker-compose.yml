@@ -5,12 +5,13 @@ services:
       context: ./iris
     volumes:
       - ./iris:/tmp/iris
-    command: -a 'sh /opt/irisapp/start.sh'
+    command: -a "sh server_start.sh"
     ports:
     - 52775:52773
     - 8081:8080
     - 51776:1972
-    - 52777:8080
+    - 4040:8080
+    - 4041:8081
   angular:
     build:
       context: ./angular
