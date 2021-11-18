@@ -122,6 +122,21 @@ export class ModelService  {
     );
   }
 
+    // POST new training run
+    trainModelWithConfig(configName:string,modelName: string, trainingName: string, fromTable: string) {
+      const url = this.ModelsUrl + "/trainings";
+      const payloadBody = {
+        configName: configName,
+        modelName: modelName,
+        trainingName: trainingName,
+        fromTable: fromTable
+      }
+      return this.http.post<any>(url, payloadBody, this.httpOptions).pipe(
+        tap(response => this.logMessage(response.query,true)),
+        catchError(this.handleError<any>('trainModel'))
+      );
+    }
+
   // GET state of training run
   getStateTrainingRun(modelName: string, trainingName: string): Observable<string> {
     const url = this.ModelsUrl + "/trainings/states?modelName=" + modelName + "&trainingName=" + trainingName ;

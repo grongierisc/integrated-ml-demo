@@ -105,11 +105,11 @@ export class ModelTrainingComponent implements OnInit {
   }
 
   trainModel() {
-    this.modelService.changeConfiguration(this.runForm.value.MLconfig).subscribe(_=> {
       const fromTable = this.fromTable + " WHERE ID <= " + Math.round((this.runForm.value.tableSelection / 100) * this.nbOfIds);
       const modelName = this.runForm.value.modelName
       const trainingName = this.runForm.value.runName
-      this.modelService.trainModel(modelName, trainingName, fromTable).subscribe(
+      const configName = this.runForm.value.configName
+      this.modelService.trainModelWithConfig(configName,modelName, trainingName, fromTable).subscribe(
         _ => {
           // Checks one time 2 seconds if the training is completed or failed
           const intervalObservable = interval(2000).subscribe(
@@ -130,7 +130,6 @@ export class ModelTrainingComponent implements OnInit {
           this.waiting = true;
         }
       );
-    })
   }
 
   // Automatically give a name to the run
