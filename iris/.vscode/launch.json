@@ -11,14 +11,14 @@
             "request": "launch",
             "module": "flask",
             "env": {
-                "FLASK_APP": "src/flask/server.py",
+                "FLASK_APP": "python/flask/app.py",
                 "FLASK_ENV": "development",
                 "FLASK_DEBUG": "1"
             },
             "args": [
                 "run",
                 "--no-debugger",
-                "--no-reload", "--port", "8080",
+                "--no-reload", "--port", "8081",
                 "--host", "0.0.0.0"
             ],
             "jinja": true
