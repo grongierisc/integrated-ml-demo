@@ -1,7 +1,6 @@
 version: '3.7'
 services:
   iris:
-    image: iris-ml
     build:
       context: ./iris
       args:
@@ -9,10 +8,11 @@ services:
     volumes:
       - ./iris:/tmp/iris
     ports:
-    - 52775:52773
-    - 51776:1972
-    - 4040:8080
-    - 4041:8081
+      - 52775:52773
+      - 51776:1972
+      - 4040:8080
+      - 4041:8081
+    #command: -a "sh /opt/irisapp/flask_server_start.sh"
   angular:
     build:
       context: ./angular
