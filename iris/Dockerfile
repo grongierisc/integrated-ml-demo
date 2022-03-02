@@ -1,4 +1,4 @@
-ARG IMAGE=containers.intersystems.com/intersystems/iris-ml-community:2021.2.0.617.0
+ARG IMAGE=containers.intersystems.com/intersystems/iris-ml-community:2021.2.0.651.0
 
 FROM $IMAGE
 
@@ -30,3 +30,5 @@ ENV IRISUSERNAME "SuperUser"
 ENV IRISPASSWORD $IRIS_PASSWORD
 
 RUN ${PYTHON_PATH} -m pip install -r ${FLASK_PATH}/requirements.txt
+
+ENTRYPOINT [ "/tini", "--", "/opt/irisapp/entrypoint.sh" ]
