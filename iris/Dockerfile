@@ -1,5 +1,4 @@
-ARG IMAGE=containers.intersystems.com/intersystems/iris-ml-community:2021.2.0.651.0
-
+ARG IMAGE=intersystemsdc/iris-ml-community:2021.2.0.651.0-zpm
 FROM $IMAGE
 
 USER root
