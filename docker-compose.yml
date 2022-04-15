@@ -7,6 +7,7 @@ services:
         - IRIS_PASSWORD=${IRIS_PASSWORD:-SYS}
     volumes:
       - ./iris:/tmp/iris
+    command: --check-caps false
     ports:
       - 52775:52773
       - 51776:1972
